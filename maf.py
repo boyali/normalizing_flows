@@ -211,6 +211,7 @@ class BatchNorm(nn.Module):
 
             mean = self.batch_mean
             var = self.batch_var
+
         else:
             mean = self.running_mean
             var = self.running_var
@@ -225,6 +226,7 @@ class BatchNorm(nn.Module):
         #        :5.3f}; mean beta {:5.3f}'.format(
         #            (var + self.eps).log().sum().data.numpy(), y.var(0).log().sum().data.numpy(),
         #            log_abs_det_jacobian.mean(0).item(), self.log_gamma.mean(), self.beta.mean()))
+
         return y, log_abs_det_jacobian.expand_as(x)
 
     def inverse(self, y, cond_y=None):
