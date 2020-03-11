@@ -666,6 +666,7 @@ def train_and_evaluate(model, train_loader, test_loader, optimizer, args):
         # plot sample
         if args.dataset == 'TOY':
             plot_sample_and_density(model, train_loader.dataset.base_dist, args, step=i)
+
         if args.dataset == 'MNIST':
             generate(model, train_loader.dataset.lam, args, step=i)
 
@@ -681,14 +682,14 @@ def plot_density(dist, ax, ranges, flip_var_order=False):
     xx1 = torch.linspace(xmin, xmax, n)
     xx2 = torch.linspace(ymin, ymax, n)
     xx, yy = torch.meshgrid(xx1, xx2)
-    xy = torch.stack((xx.flatten(), yy.flatten()), dim=-1).squeeze()
+    xy = torch.stack((xx.flatten(), yy.flatten()), dim=-1).squeeze().cuda()
 
     if flip_var_order:
         xy = xy.flip(1)
 
     # run uniform grid through model and plot
     density = dist.log_prob(xy).exp()
-    ax.contour(xx, yy, density.view(n, n).data.numpy())
+    ax.contour(xx, yy, density.view(n, n).data.cpu().numpy())
 
     # format
     ax.set_xlim(xmin, xmax)
@@ -698,7 +699,7 @@ def plot_density(dist, ax, ranges, flip_var_order=False):
 
 
 def plot_dist_sample(data, ax, ranges):
-    ax.scatter(data[:, 0].data.numpy(), data[:, 1].data.numpy(), s=10, alpha=0.4)
+    ax.scatter(data[:, 0].data.cpu().numpy(), data[:, 1].data.cpu().numpy(), s=10, alpha=0.4)
     # format
     (xmin, xmax), (ymin, ymax) = ranges
     ax.set_xlim(xmin, xmax)
@@ -763,6 +764,7 @@ if __name__ == '__main__':
     if args.model == 'made':
         model = MADE(args.input_size, args.hidden_size, args.n_hidden, args.cond_label_size,
                      args.activation_fn, args.input_order)
+
     elif args.model == 'mademog':
         assert args.n_components > 1, 'Specify more than 1 component for mixture of gaussians models.'
         model = MADEMOG(args.n_components, args.input_size, args.hidden_size, args.n_hidden, args.cond_label_size,
